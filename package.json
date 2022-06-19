@@ -1,0 +1,23 @@
+{
+  "name": "eagle_engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node index.js",
+    "generate": "node index.js",
+    "rarity": "node utils/rarity.js",
+    "preview": "node utils/preview.js",
+    "pixelate": "node utils/pixelate.js",
+    "update_info": "node utils/update_info.js",
+    "preview_gif": "node utils/preview_gif.js",
+    "generate_metadata": "node utils/generate_metadata.js"
+  },
+  "dependencies": {
+    "canvas": "^2.8.0",
+    "gif-encoder-2": "^1.0.5",
+    "sha1": "^1.1.1"
+  },
+  "author": "Chan",
+  "license": "MIT"
+}
