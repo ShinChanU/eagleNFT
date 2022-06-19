@@ -325,6 +325,7 @@ const isDnaUnique = (_DnaList = new Set(), _dna = "") => {
 // };
 
 const createHyunSooArmyLife = (_layers) => {
+  // id값으로 찾기때문에 name은 그렇게 중요하지 않음
   let randNum = [];
   let robeFlag = [false, ""]; // 3.6에서 robe인지, robe면 무슨 색인지
   _layers.forEach((layer) => {
