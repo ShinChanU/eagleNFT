@@ -427,7 +427,6 @@ function shuffle(array) {
   }
   return array;
 }
-
 const startCreating = async () => {
   //nft 만드는 함수
   let layerConfigIndex = 0;
