@@ -295,6 +295,7 @@ const createHyunSooArmyLife = (_layers) => {
   let randNum = [];
   let robeFlag = [false, ""]; // 3.6에서 robe 판별
   let maskFlag = false; // 4.0 에서 mask 판별
+  let suitFlag = false;
   _layers.forEach((layer) => {
     let totalWeight = 0;
     layer.elements.forEach((element) => {
@@ -305,6 +306,8 @@ const createHyunSooArmyLife = (_layers) => {
       let imageName = layer.elements[i].filename;
       random -= layer.elements[i].weight;
       if (random < 0) {
+        if (imageName.indexOf("3)") > -1 && imageName.indexOf("suit") > -1)
+          suitFlag = true; // 3에서 suit 발생
         if (imageName.indexOf("4)") > -1 && imageName.indexOf("Mask") > -1)
           maskFlag = true; // 4에서 mask 발생
         if (imageName.substring(0, 3) === "3.6")
@@ -337,6 +340,9 @@ const createHyunSooArmyLife = (_layers) => {
       }
     }
   });
+  if (!suitFlag) {
+    randNum.splice(8, 1, "0:3.5) empty #85");
+  }
   if (robeFlag[0]) {
     // robe의 경우 마지막 모자형태 교체
     randNum.pop();
