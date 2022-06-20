@@ -35,6 +35,7 @@ const EagleGif = require(`${basePath}/modules/EagleGif.js`);
 let eagleGif = null;
 
 const buildSetup = () => {
+  // image 저장 폴더 setting
   if (fs.existsSync(buildDir)) {
     fs.rmdirSync(buildDir, { recursive: true });
   }
@@ -47,6 +48,7 @@ const buildSetup = () => {
 };
 
 const getRarityWeight = (_str) => {
+  // png 확률 추출
   let nameWithoutExtension = _str.slice(0, -4);
   var nameWithoutWeight = Number(
     nameWithoutExtension.split(rarityDelimiter).pop()
@@ -58,12 +60,14 @@ const getRarityWeight = (_str) => {
 };
 
 const cleanDna = (_str) => {
+  // dna 추출(id)
   const withoutOptions = removeQueryStrings(_str);
   var dna = Number(withoutOptions.split(":").shift());
   return dna;
 };
 
 const cleanName = (_str) => {
+  // 확장자 제거 함수
   let nameWithoutExtension = _str.slice(0, -4); // .png 삭제
   var nameWithoutWeight = nameWithoutExtension.split(rarityDelimiter).shift();
   return nameWithoutWeight;
@@ -280,54 +284,17 @@ const isDnaUnique = (_DnaList = new Set(), _dna = "") => {
   return !_DnaList.has(_filteredDNA);
 };
 
-// const createHyunSooArmyLife = (_layers) => {
-//   // 할수있음..0525
-//   let randNum = [];
-//   let flagG = false; // 찬우 설정(변수)
-//   _layers.forEach((layer) => {
-//     var totalWeight = 0;
-//     layer.elements.forEach((element) => {
-//       totalWeight += element.weight;
-//     });
-//     // number between 0 - totalWeight
-//     // 0~80 : 랜덤으로 뽑는 수 - 랜덤으로 뽑은 png의 확률 < 0 그 시점에 있던 새끼가 뽑힘 완전랜덤
-//     let random = Math.floor(Math.random() * totalWeight); // 0~100 사이 숫자(랜덤)
-
-//     let i = 0;
-//     while (i < layer.elements.length) {
-//       // png 하나씩 반복문
-//       // console.log(random, i, layer.elements[i].filename, flagG); // test용
-//       let nameFlag = layer.elements[i].filename[0];
-//       // subtract the current weight from the random weight until we reach a sub zero value.
-//       random -= layer.elements[i].weight; // random = random - png 확률
-//       if (random < 0) {
-//         // 만족하는 시점의 이미지(png)
-//         if (nameFlag === "G") {
-//           if (!flagG) {
-//             if (nameFlag === "G") flagG = true;
-//           } else {
-//             // 또 G를 만남 그럼 가중치 다시 더하고 i를 랜덤으로 뽑음
-//             random += layer.elements[i].weight;
-//             i = Math.ceil(Math.random() * layer.elements.length - 1);
-//             continue;
-//           }
-//         }
-//         return randNum.push(
-//           `${layer.elements[i].id}:${layer.elements[i].filename}${
-//             layer.bypassDNA ? "?bypassDNA=true" : ""
-//           }`
-//         );
-//       }
-//       i++;
-//     }
-//   });
-//   return randNum.join(DNA_DELIMITER);
-// };
+// 0620 분리, 찬우
+const robeBack = (_robeFlag, _imageName) => {
+  // 3.6 robe인지 판별
+  if (_imageName.search("robe") < 0) return [false, ""];
+  else return [true, _imageName.split(" ")[3]];
+};
 
 const createHyunSooArmyLife = (_layers) => {
-  // id값으로 찾기때문에 name은 그렇게 중요하지 않음
   let randNum = [];
-  let robeFlag = [false, ""]; // 3.6에서 robe인지, robe면 무슨 색인지
+  let robeFlag = [false, ""]; // 3.6에서 robe 판별
+  let maskFlag = false; // 4.0 에서 mask 판별
   _layers.forEach((layer) => {
     let totalWeight = 0;
     layer.elements.forEach((element) => {
@@ -338,36 +305,24 @@ const createHyunSooArmyLife = (_layers) => {
       let imageName = layer.elements[i].filename;
       random -= layer.elements[i].weight;
       if (random < 0) {
-        if (imageName.substring(0, 3) === "3.6") {
-          //3.6에서의 얘외처리
-          if (imageName.indexOf("robe") > 0) {
-            // robe 일때
-            robeFlag[0] = true;
-            robeFlag[1] = imageName.split(" ")[3];
-          }
-        }
+        if (imageName.indexOf("4)") > -1 && imageName.indexOf("Mask") > -1)
+          maskFlag = true; // 4에서 mask 발생
+        if (imageName.substring(0, 3) === "3.6")
+          robeFlag = robeBack(robeFlag, imageName); // 3.6에서 robe 발생 검사
         if (imageName[0] === "5") {
+          // 5에서 robe, empty 검사
           if (!robeFlag[0]) {
-            // robe가 아니였음 robe면 다시 i로 찾기
+            // robe면 다시 i로 찾기
             if (imageName.indexOf("robe") > 0) {
               random += layer.elements[i].weight;
               i = Math.floor(Math.random() * layer.elements.length - 1);
               if (i === -1) i = 0;
               continue;
-            } else {
-              return randNum.push(
-                `${layer.elements[i].id}:${layer.elements[i].filename}${
-                  layer.bypassDNA ? "?bypassDNA=true" : ""
-                }`
-              );
             }
           } else {
-            let tmp =
-              robeFlag[1] === ("black" || "red")
-                ? `5) robe hood ${robeFlag[1]} #0.4.png`
-                : `5) robe hood ${robeFlag[1]} #0.3.png`;
+            let tmp = `robe hood ${robeFlag[1]}`;
             for (let x of layer.elements) {
-              if (x.filename === tmp) {
+              if (x.filename.search(tmp) >= 0) {
                 robeFlag.push(x.id); // 색의 맞는 robe 찾기
                 break;
               }
@@ -375,10 +330,7 @@ const createHyunSooArmyLife = (_layers) => {
           }
         }
         return randNum.push(
-          // `${layer.elements[i].id}:${layer.elements[i].filename}${
-          //   layer.bypassDNA ? "?bypassDNA=true" : ""
-          // }`
-          `${layer.elements[i].id}:""${
+          `${layer.elements[i].id}:${layer.elements[i].filename}${
             layer.bypassDNA ? "?bypassDNA=true" : ""
           }`
         );
@@ -388,12 +340,10 @@ const createHyunSooArmyLife = (_layers) => {
   if (robeFlag[0]) {
     // robe의 경우 마지막 모자형태 교체
     randNum.pop();
-    let tmp =
-      robeFlag[1] === ("black" || "red")
-        ? `5) robe hood ${robeFlag[1]} #0.4.png`
-        : `5) robe hood ${robeFlag[1]} #0.3.png`;
+    let tmp = `5) robe 1hood ${robeFlag[1]}`;
     randNum.push(`${robeFlag[2]}:${tmp}`);
   }
+  if (maskFlag) randNum.splice(11, 1, "0:3.9) empty #85"); // mask의 경우 3.9 empty 로
   return randNum.join(DNA_DELIMITER);
 };
 
@@ -468,7 +418,7 @@ const startCreating = async () => {
           debugLogs ? console.log("Clearing canvas") : null;
           ctx.clearRect(0, 0, format.width, format.height);
           if (gif.export) {
-            eagleGif = new eagleGif(
+            eagleGif = new EagleGif(
               canvas,
               ctx,
               `${buildDir}/gifs/${abstractedIndexes[0]}.gif`,
