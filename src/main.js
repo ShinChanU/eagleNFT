@@ -292,43 +292,70 @@ const robeBack = (_robeFlag, _imageName) => {
 };
 
 const createHyunSooArmyLife = (_layers) => {
-  let randNum = [];
+  let randNum = []; // dna 배열
+  let suitFlag = false; // 3 에서 suit 판별
+  let shirtFlag = false; // 3 에서 shirt 판별
   let robeFlag = [false, ""]; // 3.6에서 robe 판별
   let maskFlag = false; // 4.0 에서 mask 판별
-  let suitFlag = false;
+  let hairpinFlag = false; // 4.5 에서 hairpin 판별
+
   _layers.forEach((layer) => {
     let totalWeight = 0;
     layer.elements.forEach((element) => {
       totalWeight += element.weight;
     });
     let random = Math.floor(Math.random() * totalWeight);
-    for (var i = 0; i < layer.elements.length; i++) {
+    let i = 0;
+    const pullItemContinue = () => {
+      // 뽑은 확률 다시 추가후 다음 타깃으로 가는 함수
+      random += layer.elements[i].weight;
+      i = i + 1 === layer.elements.length ? 0 : i + 1;
+    };
+
+    while (1) {
+      // 무한 루프로 변경
       let imageName = layer.elements[i].filename;
       random -= layer.elements[i].weight;
+
       if (random < 0) {
-        if (imageName.indexOf("3)") > -1 && imageName.indexOf("suit") > -1)
-          suitFlag = true; // 3에서 suit 발생
+        if (imageName.indexOf("3)") > -1) {
+          // 3에서 suit, shirt 판별
+          if (/suit/i.test(imageName)) suitFlag = true;
+          else if (/SHIRT/i.test(imageName.toUpperCase())) shirtFlag = true;
+        }
         if (imageName.indexOf("4)") > -1 && imageName.indexOf("Mask") > -1)
           maskFlag = true; // 4에서 mask 발생
         if (imageName.substring(0, 3) === "3.6")
           robeFlag = robeBack(robeFlag, imageName); // 3.6에서 robe 발생 검사
+        if (imageName.substring(0, 3) === "3.8") {
+          // 3.8에서 리본일때 shirt suit 맞는지 검사
+          if (/ribbon/i.test(imageName) && !shirtFlag && !suitFlag) {
+            pullItemContinue();
+            continue;
+          }
+        }
+        if (imageName.substring(0, 3) === "4.5")
+          if (/hairpin/i.test(imageName))
+            // 4.5의  hairpin 판별
+            hairpinFlag = true;
         if (imageName[0] === "5") {
+          //5 에서 afro와 헤어핀일 경우 empty로 변경
+          if (hairpinFlag && /afro/i.test(imageName)) {
+            randNum.pop();
+            randNum.push("0:4.5) empty #87");
+          }
           // 5에서 robe, empty 검사
           if (!robeFlag[0]) {
-            // robe면 다시 i로 찾기
+            // robeFlag는 false, 5에서 robe의 경우
             if (imageName.indexOf("robe") > 0) {
-              random += layer.elements[i].weight;
-              i = Math.floor(Math.random() * layer.elements.length - 1);
-              if (i === -1) i = 0;
+              pullItemContinue();
               continue;
             }
           } else {
-            let tmp = `robe hood ${robeFlag[1]}`;
-            for (let x of layer.elements) {
-              if (x.filename.search(tmp) >= 0) {
-                robeFlag.push(x.id); // 색의 맞는 robe 찾기
-                break;
-              }
+            // robe 이고, 칼라도 같다면 pass
+            if (!/robe/i.test(imageName) || !imageName.includes(robeFlag[1])) {
+              pullItemContinue();
+              continue;
             }
           }
         }
@@ -338,16 +365,13 @@ const createHyunSooArmyLife = (_layers) => {
           }`
         );
       }
+      i = i + 1 === layer.elements.length ? 0 : i + 1;
     }
   });
+
   if (!suitFlag) {
-    randNum.splice(8, 1, "0:3.5) empty #85");
-  }
-  if (robeFlag[0]) {
-    // robe의 경우 마지막 모자형태 교체
-    randNum.pop();
-    let tmp = `5) robe 1hood ${robeFlag[1]}`;
-    randNum.push(`${robeFlag[2]}:${tmp}`);
+    // suit가 아니라면 넥타이 삭제
+    randNum.splice(8, 1, "0:3.5) empty #0");
   }
   if (maskFlag) randNum.splice(11, 1, "0:3.9) empty #85"); // mask의 경우 3.9 empty 로
   return randNum.join(DNA_DELIMITER);
