@@ -17,7 +17,7 @@ const solanaMetadata = {
   creators: [
     {
       address: "7fXNuer5sbZtaTEPhtJ5g5gNtuyRoKkvxdjEjEnPN4mC",
-      share: 500,
+      share: 100,
     },
   ],
 };
@@ -25,7 +25,7 @@ const solanaMetadata = {
 // If you have selected Solana then the collection starts from 0 automatically
 const layerConfigurations = [
   {
-    growEditionSizeTo: 100, // test 50개로 지정
+    growEditionSizeTo: 10000, // test 50개로 지정
     layersOrder: [
       { name: "0) background" },
       { name: "1) hair" },

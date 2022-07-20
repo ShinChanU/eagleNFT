@@ -304,7 +304,8 @@ const createHyunSooArmyLife = (_layers) => {
     layer.elements.forEach((element) => {
       totalWeight += element.weight;
     });
-    let random = Math.floor(Math.random() * totalWeight);
+    let random = +(Math.random() * totalWeight).toFixed(4);
+    console.log(random);
     let i = 0;
     const pullItemContinue = () => {
       // 뽑은 확률 다시 추가후 다음 타깃으로 가는 함수
