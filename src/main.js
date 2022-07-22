@@ -305,18 +305,17 @@ const createHyunSooArmyLife = (_layers) => {
       totalWeight += element.weight;
     });
     let random = +(Math.random() * totalWeight).toFixed(4);
-    console.log(random);
     let i = 0;
-    const pullItemContinue = () => {
-      // 뽑은 확률 다시 추가후 다음 타깃으로 가는 함수
-      random += layer.elements[i].weight;
-      i = i + 1 === layer.elements.length ? 0 : i + 1;
-    };
 
     while (1) {
       // 무한 루프로 변경
       let imageName = layer.elements[i].filename;
       random -= layer.elements[i].weight;
+      const pullItemContinue = () => {
+        // 뽑은 확률 다시 추가후 다음 타깃으로 가는 함수
+        random += layer.elements[i].weight;
+        i = i + 1 === layer.elements.length ? 0 : i + 1;
+      };
 
       if (random < 0) {
         if (imageName.indexOf("3)") > -1) {

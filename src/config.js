@@ -25,7 +25,7 @@ const solanaMetadata = {
 // If you have selected Solana then the collection starts from 0 automatically
 const layerConfigurations = [
   {
-    growEditionSizeTo: 10000, // test 50개로 지정
+    growEditionSizeTo: 100000, // test 50개로 지정
     layersOrder: [
       { name: "0) background" },
       { name: "1) hair" },
